@@ -48,31 +48,6 @@ module.exports = class DappTransactions {
 		`;
 	}
 
-	static marketplace_list_nft_for_sale() {
-		return fcl.transaction`
-				import MarketplaceContract from 0x01cf0e2f2f715450
-				
-				// Lists an NFT for sale
-				
-				transaction(id: UInt64, price: UFix64) {
-				
-				  let saleCollection: &MarketplaceContract.SaleCollection
-				
-				  prepare(acct: AuthAccount) {
-				      self.saleCollection = acct.borrow<&MarketplaceContract.SaleCollection>(from: /storage/SaleCollection) 
-				          ?? panic("Could not borrow the user's Sale Collection")
-				  }
-				
-				  execute {
-				      self.saleCollection.listForSale(id: id, price: price)
-				
-				      log("Listed NFT for sale")
-				  }
-				}
-				
-		`;
-	}
-
 	static marketplace_provision_account() {
 		return fcl.transaction`
 				import MarketplaceContract from 0x01cf0e2f2f715450
@@ -119,6 +94,31 @@ module.exports = class DappTransactions {
 				    }
 				    
 				}
+		`;
+	}
+
+	static marketplace_list_nft_for_sale() {
+		return fcl.transaction`
+				import MarketplaceContract from 0x01cf0e2f2f715450
+				
+				// Lists an NFT for sale
+				
+				transaction(id: UInt64, price: UFix64) {
+				
+				  let saleCollection: &MarketplaceContract.SaleCollection
+				
+				  prepare(acct: AuthAccount) {
+				      self.saleCollection = acct.borrow<&MarketplaceContract.SaleCollection>(from: /storage/SaleCollection) 
+				          ?? panic("Could not borrow the user's Sale Collection")
+				  }
+				
+				  execute {
+				      self.saleCollection.listForSale(id: id, price: price)
+				
+				      log("Listed NFT for sale")
+				  }
+				}
+				
 		`;
 	}
 
@@ -232,6 +232,34 @@ module.exports = class DappTransactions {
 		`;
 	}
 
+	static registry_register_with_registry() {
+		return fcl.transaction`
+				import RegistryService from 0x01cf0e2f2f715450
+				
+				// Allows a Tenant to register with the RegistryService. It will
+				// save an AuthNFT to account storage. Once an account
+				// has an AuthNFT, they can then get Tenant Resources from any contract
+				// in the Registry.
+				//
+				// Note that this only ever needs to be called once per Tenant
+				
+				transaction() {
+				
+				    prepare(acct: AuthAccount) {
+				        // if this account doesn't already have an AuthNFT...
+				        if acct.borrow<&RegistryService.AuthNFT>(from: RegistryService.AuthStoragePath) == nil {
+				            // save a new AuthNFT to account storage
+				            acct.save(<-RegistryService.register(), to: RegistryService.AuthStoragePath)  
+				        }
+				    }
+				
+				    execute {
+				
+				    }
+				}
+		`;
+	}
+
 	static nft_transfer_nft() {
 		return fcl.transaction`
 				import RegistryNFTContract from 0x01cf0e2f2f715450
@@ -258,34 +286,6 @@ module.exports = class DappTransactions {
 				
 				      log("Transfered the NFT from the giver to the recipient")
 				  }
-				}
-		`;
-	}
-
-	static registry_register_with_registry() {
-		return fcl.transaction`
-				import RegistryService from 0x01cf0e2f2f715450
-				
-				// Allows a Tenant to register with the RegistryService. It will
-				// save an AuthNFT to account storage. Once an account
-				// has an AuthNFT, they can then get Tenant Resources from any contract
-				// in the Registry.
-				//
-				// Note that this only ever needs to be called once per Tenant
-				
-				transaction() {
-				
-				    prepare(acct: AuthAccount) {
-				        // if this account doesn't already have an AuthNFT...
-				        if acct.borrow<&RegistryService.AuthNFT>(from: RegistryService.AuthStoragePath) == nil {
-				            // save a new AuthNFT to account storage
-				            acct.save(<-RegistryService.register(), to: RegistryService.AuthStoragePath)  
-				        }
-				    }
-				
-				    execute {
-				
-				    }
 				}
 		`;
 	}
