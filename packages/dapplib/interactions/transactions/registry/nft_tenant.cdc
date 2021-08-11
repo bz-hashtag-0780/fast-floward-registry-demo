@@ -7,7 +7,7 @@ import RegistryService from Registry.RegistryService
 // Note that this can only be called by someone who has already registered
 // with the RegistryService and received an AuthNFT.
 
-transaction() {
+transaction() { 
 
   prepare(acct: AuthAccount) {
     // save the Tenant resource to the account if it doesn't already exist
@@ -20,7 +20,7 @@ transaction() {
       acct.save(<-RegistryNFTContract.instance(authNFT: authNFTRef), to: RegistryNFTContract.TenantStoragePath)
 
       // link the Tenant resource to the public with ITenant restrictions
-      acct.link<&RegistryNFTContract.Tenant{RegistryNFTContract.ITenant}>(RegistryNFTContract.TenantPublicPath, target: RegistryNFTContract.TenantStoragePath)
+      acct.link<&RegistryNFTContract.Tenant{RegistryNFTContract.ITenant, RegistryNFTContract.ITenantMinter}>(RegistryNFTContract.TenantPublicPath, target: RegistryNFTContract.TenantStoragePath)
     }
   }
 
